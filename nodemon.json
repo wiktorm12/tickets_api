@@ -1,0 +1,11 @@
+{
+    "env": {
+      "DB_HOST": "localhost",
+      "DB_PORT": "3306",
+      "DB_USER": "root",
+      "DB_PASSWORD": "",
+      "DB_NAME": "tickets",
+      "JWT_SECRET": "1234567890"
+    }
+  }
+  
