@@ -8,6 +8,7 @@ class Ticket {
         this.idAccount = idAccount;
         this.title = title;
         this.status = status;
+        this.messages = {};
     }
     
     static async getAllIDs() {
@@ -25,7 +26,7 @@ class Ticket {
             const q = await database('ticket').insert({ id_account: this.idAccount, title: this.title  });
             this.id = q[0];
         } else 
-            await database('ticket').update({ id_account: this.idAccount, title: this.title, status: this.status }).where('id', this.id);
+            await database('ticket').update({ id_account: this.idAccount, title: this.title, status: this.status.toString() }).where('id', this.id);
 
         return this;
     }
@@ -73,8 +74,6 @@ class TicketMessage {
 
     
     async save() {
-
-        
         if( this.id == null ) {
             const q = await database("ticket_message").insert({ id_sender: this.userID, id_ticket: this.ticketID, content: this.message });
             this.id = q[0];
@@ -95,6 +94,7 @@ class TicketMessage {
         this.userID = data[0].id_sender;
         this.ticketID = data[0].id_ticket;
         this.message = data[0].content;
+        this.created_data = data[0].created_data;
 
 
         return this;
@@ -105,6 +105,19 @@ class TicketMessage {
 
 
         return result;
+    }
+
+    async read(userID) {
+
+        if( !await this.isRead(userID) )
+            await database("ticket_read").insert({ id_message: this.id, id_user: userID });
+
+        return true;
+    }
+
+    async isRead(userID) {
+        const data = await database("ticket_read").where({ id_message: this.id, id_user: userID });
+        return data.length > 0;
     }
 
 }

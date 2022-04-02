@@ -2,6 +2,8 @@ import database from "./database.mjs";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import Ticket from './ticket.mjs';
+
 class User {
 
     constructor(id, login = null, admin = false) {
@@ -58,6 +60,40 @@ class User {
         const token = jwt.sign({ id: this.id, hash: this.password }, process.env.JWT_SECRET);
         return token;
     }
+
+    async createTicket(title) {
+        const ticket = new Ticket(null, this.id, title);
+        await ticket.save();
+        return ticket;
+    }
+
+    async getTicketsID() {
+
+        const ticket = this.admin ? await Ticket.getAllIDs() : await Ticket.getAllIDsFromUser(this.id);
+
+        this.ticketsID = [];
+
+        for( let i = 0; i < ticket.length; i++ )
+            this.ticketsID.push(ticket[i].id);
+
+        return this.ticketsID;
+    }
+
+    async getTickets(withMessage = false) {
+        const ticket = await this.getTicketsID();
+
+        const tickets = [];
+
+        for( let i = 0; i < ticket.length; i++ ) {
+            const t = new Ticket(ticket[i]);
+            await t.load( withMessage );
+            tickets.push(t);
+        }
+
+        this.tickets = tickets;
+        return tickets;
+    }
+
 
     static async getFromToken(token) {
         try {
